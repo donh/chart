@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Bits Bond0</title>
+	<link href="css/don.css" rel="stylesheet" type="text/css">
+	<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../../excanvas.min.js"></script><![endif]-->
+	<script language="javascript" type="text/javascript" src="js/jquery.js"></script>
+	<script language="javascript" type="text/javascript" src="js/jquery.flot.js"></script>
+	<script language="javascript" type="text/javascript" src="js/jquery.flot.time.js"></script>
+	<script type="text/javascript">
+
+	$(function() {
+
+		var options = {
+			lines: {
+				show: true,
+				fill: true ,
+				// lineWidth: 1,
+				fillColor: 'rgba(242, 239, 145, 0.18)'
+				// fillColor: 'rgba(210, 242, 145, 0.18)'
+				// fillColor: 'rgba(31, 118, 189, 0.18)'
+				// lineColor: 'rgb(31, 120, 193)',
+				// fillColor: '#ADAFAE'
+				// fillColor: 'gradient'
+			},
+			// points: {
+			// 	show: true
+			// },
+			legend: { show: false },
+			grid: {
+				hoverable: true,
+				// clickable: true
+			},
+			xaxis: {
+				mode: "time",
+				timeformat: "%m/%d %H:%M",
+				timezone: "browser",
+				minTickSize: [1, "hour"],
+				font: {
+					color: "#fff"
+				}
+			},
+			yaxis: {
+				tickFormatter: function (v, axis) { return suffixFormatterAxis(v, axis); },
+				font: {
+					// size: 11,
+					// lineHeight: 13,
+					// style: "italic",
+					// weight: "bold",
+					// family: "sans-serif",
+					// variant: "small-caps",
+					color: "#fff"
+				}
+				// color: '#fff'
+				// tickFormatter: function (v, axis) { return suffixFormatter(v, axis); },
+				// tickDecimals: null
+			},
+			colors: ['#669900', '#33B5E5', '#ECBB13', '#FF8800', '#005f81', '#9933CC']
+			// colors: ['rgba(71, 212, 59, 0.4)', 'rgba(245, 150, 40, 0.73)', 'rgba(225, 40, 40, 0.59)']
+			// colors: ['rgba(50, 172, 45, 0.97)', 'rgba(237, 129, 40, 0.89)', 'rgba(245, 54, 54, 0.9)']
+			// colors: ["rgba(245, 54, 54, 0.9)", "rgba(237, 129, 40, 0.89)", "rgba(50, 172, 45, 0.97)"]
+			// colors: ["#d18b2c", "#dba255", "#919733"]
+		};
+
+		function formatter(val, axis) {
+			return val.toFixed(axis.tickDecimals);
+		}
+
+		function suffixFormatterAxis(val, axis) {
+			return suffixFormatter(val, axis.tickDecimals);
+		}
+
+		function suffixFormatter(val, decimals) {
+			if (val > 1000000)
+				return (val / 1000000).toFixed(decimals) + " M";
+				// return (val / 1000000).toFixed(decimals) + " MB";
+			else if (val > 1000)
+				return (val / 1000).toFixed(decimals) + " k";
+				// return (val / 1000).toFixed(decimals) + " kB";
+			else
+				return val.toFixed(decimals);
+				// return val.toFixed(decimals) + " B";
+		}
+
+		function onDataReceived(series) {
+			var data = series.map(function(line) {
+				var arr = line.Values.map(function(item) {
+					return [item.timestamp * 1000, item.value];
+				});
+				return {
+					label: line.endpoint + '.' + line.counter,
+					shadowSize: 5,
+					data: arr
+				};
+			});
+			console.log('data =', data);
+
+			$.plot("#placeholder", data, options);
+		}
+
+		var dataurl = 'data/bits.json';
+		// console.log('dataurl =', dataurl);
+
+		// var dataPOST = {
+		// 	"start": 1458954398,
+		// 	"end": 1458955398,
+		// 	"cf": "AVERAGE",
+		// 	"endpoint_counters": [
+		// 		{
+		// 			"endpoint": "",
+		// 			"counter": ""
+		// 		},
+		// 		{
+		// 			"endpoint": "",
+		// 			"counter": ""
+		// 		}
+		// 	]
+		// };
+
+		$.ajax({
+			url: dataurl,
+			type: "GET",
+			// type: "POST",
+			// data: dataPOST,
+			dataType: "json",
+			success: onDataReceived
+		});
+
+		$("<div id='tooltip'></div>").css({
+			position: "absolute",
+			display: "none",
+			border: "1px solid #fdd",
+			padding: "2px",
+			"background-color": "#fee",
+			opacity: 0.80
+		}).appendTo("body");
+
+		$("#placeholder").bind("plothover", function (event, pos, item) {
+			if (item) {
+				var x = item.datapoint[0],
+					y = suffixFormatter(item.datapoint[1], 1);
+
+				var d = $.plot.dateGenerator(x, {timezone: "browser"});
+				// var time = $.plot.formatDate(d, '%Y-%m-%d %H:%M:%S');
+				// var time = $.plot.formatDate(d, '%Y-%m-%d %H:%M');
+				var time = $.plot.formatDate(d, '%Y-%n-%d %H:%M');
+				$("#tooltip")
+					.html('<center>' + time + '</center>' + '<div>' + item.series.label + " = " + y + '</div>')
+					.css({top: item.pageY+5, left: item.pageX+5})
+					.fadeIn(200);
+			} else {
+				$("#tooltip").hide();
+			}
+		});
+
+
+		// $("button.dataUpdate").click(function () {
+
+		// 	data = [];
+		// 	alreadyFetched = {};
+
+		// 	$.plot("#placeholder", data, options);
+
+		// 	var iteration = 0;
+
+		// 	function fetchData() {
+
+		// 		++iteration;
+
+		// 		function onDataReceived(series) {
+		// 			console.log('onDataReceived series =', series);
+
+		// 			// Load all the data in one pass; if we only got partial
+		// 			// data we could merge it with what we already have.
+
+		// 			data = [ series ];
+		// 			console.log('$.plot data =', data)
+		// 			$.plot("#placeholder", data, options);
+		// 		}
+
+		// 		// Normally we call the same URL - a script connected to a
+		// 		// database - but in this case we only have static example
+		// 		// files, so we need to modify the URL.
+
+		// 		$.ajax({
+		// 			url: "data-eu-gdp-growth-" + iteration + ".json",
+		// 			type: "GET",
+		// 			dataType: "json",
+		// 			success: onDataReceived
+		// 		});
+
+		// 		if (iteration < 5) {
+		// 			setTimeout(fetchData, 1000);
+		// 		} else {
+		// 			data = [];
+		// 			alreadyFetched = {};
+		// 		}
+		// 	}
+
+		// 	setTimeout(fetchData, 1000);
+		// });
+	});
+
+	</script>
+</head>
+<body>
+	<div id="content">
+		<div class="demo-container">
+			<div id="placeholder" class="demo-placeholder"></div>
+		</div>
+		<p>
+			<button class="dataUpdate">Poll for data</button>
+		</p>
+
+	</div>
+</body>
+</html>
