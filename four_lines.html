@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+	<header>
+		<meta charset="utf-8">
+		<script src="js/echarts.min.js"></script>
+	</header>
+	<body>
+		<div id="main" style="width: 1200px;height:800px;"></div>
+		<script type="text/javascript">
+			var myChart = echarts.init(document.getElementById('main'));
+
+			var option = {
+				tooltip: {},
+				legend: {
+					data:[
+						'Conceptual Understanding',
+						'Everyday Application',
+						'Science Communication',
+						'Higher-Order Cognitive Skills'
+					]
+				},
+				xAxis: {
+					name: 'Mathematics Learning Profiles',
+					nameTextStyle: {
+						fontSize: 18,
+					},
+					nameLocation: 'middle',
+					nameGap: 35,
+					data: ["Constructive","Mixed","Passive","Aiming-for-tests"]
+				},
+				yAxis: {
+					name: 'Mathematics Learning Self-Efficacy',
+					nameTextStyle: {
+						fontSize: 18,
+					},
+					nameLocation: 'middle',
+					nameGap: 35,
+					max: 3.8,
+					min: 2.8
+				},
+				series: [
+					{
+						name: 'Conceptual Understanding',
+						type: 'line',
+						lineStyle: {
+							normal: {
+								type: 'solid'
+							}
+						},
+						// symbol: 'circle',
+						symbolSize: 8,
+						data: [3.78, 3.51, 3.03, 3.04]
+					},
+					{
+						name: 'Everyday Application',
+						type: 'line',
+						lineStyle: {
+							normal: {
+								type: 'solid'
+							}
+						},
+						symbol: 'rect',
+						symbolSize: 8,
+						data: [3.52, 3.16, 2.86, 2.89]
+					},
+					{
+						name: 'Science Communication',
+						type: 'line',
+						lineStyle: {
+							normal: {
+								type: 'dashed'
+							}
+						},
+						symbol: 'diamond',
+						symbolSize: 8,
+						data: [3.67, 3.43, 3.02, 2.98]
+					},
+					{
+						name: 'Higher-Order Cognitive Skills',
+						type: 'line',
+						lineStyle: {
+							normal: {
+								type: 'dotted'
+							}
+						},
+						symbol: 'triangle',
+						symbolSize: 8,
+						data: [3.69, 3.39, 3.01, 2.97]
+					}
+				]
+			};
+
+			myChart.setOption(option);
+		</script>
+	</body>
+</html>
